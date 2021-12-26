@@ -60,7 +60,6 @@ const Board: FC = () => {
         squares[b] === squares[c] &&
         squares[a] !== null
       ) {
-        console.log(squares[a]);
         setWinner(squares[a]);
       }
     }
