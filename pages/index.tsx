@@ -1,121 +1,93 @@
 import { Button } from "@chakra-ui/button";
-import { Box, VStack, Text, Heading, Flex, Center } from "@chakra-ui/layout";
+import { ChevronDownIcon } from "@chakra-ui/icons";
+import { Box, Center, Flex, Heading, Stack } from "@chakra-ui/layout";
+import {
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuOptionGroup,
+  MenuItemOption,
+} from "@chakra-ui/menu";
 import type { NextPage } from "next";
-import React, { FC, useState } from "react";
-
-type GameType = "X" | "O" | null;
-const squares: Array<GameType> = Array(9).fill(null);
-interface SquareProps {
-  index: number;
-  onClick: (index: number) => void;
-}
-const Square: FC<SquareProps> = (props) => {
-  return (
-    <Flex
-      size="md"
-      height="100px"
-      width="100px"
-      borderWidth="medium"
-      justifyContent="center"
-      fontSize="xl"
-      alignItems="center"
-      borderTop={props.index > 5 ? "4px" : "none"}
-      borderBottom={props.index < 3 ? "4px" : "none"}
-      // hardcoded the values coz i couldn't think of anything better
-      borderLeft={
-        props.index === 2 || props.index === 5 || props.index === 8
-          ? "4px"
-          : "none"
-      }
-      borderRight={props.index % 3 === 0 ? "4px" : "none"}
-      onClick={() => props.onClick(props.index)}
-    >
-      {squares[props.index]}
-    </Flex>
-  );
-};
-const Board: FC = () => {
-  let [winner, setWinner] = useState<GameType>(null);
-  const [isX, changeX] = useState(true);
-  const handleClick = (index: number): void => {
-    if (squares[index] === null && winner === null) {
-      squares[index] = isX ? "X" : "O";
-      changeX(!isX);
-    }
-    calculateWinner();
-  };
-  const calculateWinner = () => {
-    const winningLines = [
-      [0, 1, 2],
-      [0, 3, 6],
-      [6, 7, 8],
-      [2, 5, 8],
-      [0, 4, 8],
-      [2, 4, 6],
-    ];
-    for (let index = 0; index < winningLines.length; index++) {
-      const [a, b, c] = winningLines[index];
-      if (
-        squares[a] === squares[b] &&
-        squares[b] === squares[c] &&
-        squares[a] !== null
-      ) {
-        setWinner(squares[a]);
-      }
-    }
-  };
-  const renderSquare = (index: number) => {
-    return <Square index={index} onClick={handleClick} />;
-  };
-  const resetBoard = () => {
-    for (let index = 0; index < squares.length; index++) {
-      squares[index] = null;
-    }
-    changeX(true);
-    setWinner(null);
-  };
-  return (
-    <Box>
-      <Text mb={10} textAlign="center">
-        The Current Player is {isX ? "X" : "O"}
-      </Text>
-      <Flex>
-        {renderSquare(0)}
-        {renderSquare(1)}
-        {renderSquare(2)}
-      </Flex>
-      <Flex>
-        {renderSquare(3)}
-        {renderSquare(4)}
-        {renderSquare(5)}
-      </Flex>
-      <Flex>
-        {renderSquare(6)}
-        {renderSquare(7)}
-        {renderSquare(8)}
-      </Flex>
-      {winner !== null ? (
-        <Text textAlign="center" mt={10}>
-          The winner is {winner}
-        </Text>
-      ) : null}
-      <Center>
-        <Button onClick={resetBoard} mt={10}>
-          Reset Game
-        </Button>
-      </Center>
-    </Box>
-  );
-};
+import Head from "next/head";
+import { useRouter } from "next/router";
+import React, { useState } from "react";
 
 const Home: NextPage = () => {
+  const router = useRouter();
+  const [mode, setMode] = useState("single");
+  const showMode = () => {
+    let result = "Game Mode: ";
+    switch (mode) {
+      case "b-3":
+        result += "Best of 3";
+        break;
+      case "b-5":
+        result += "Best of 5";
+        break;
+      case "b-10":
+        result += "Best of 10";
+        break;
+      default:
+        result += "Single Game";
+        break;
+    }
+    return result;
+  };
   return (
-    <VStack>
-      <Heading size="md" mt={10}>
-        Tic Tac Toe Game
-      </Heading>
-      <Board />
-    </VStack>
+    <Box w="100vw" h="100vh">
+      <Head>
+        <title>Tic Tac Toe Game | Homepage</title>
+      </Head>
+      <Flex
+        flexDirection="column"
+        justifyContent="center"
+        alignItems="center"
+        w="100%"
+        h="100%"
+      >
+        <Heading size="xl" mb={10}>
+          Tic Tac Toe Game
+        </Heading>
+        <Menu closeOnSelect={true}>
+          <MenuButton as={Button} _expanded={{ bg: "blue.400" }}>
+            {showMode()} <ChevronDownIcon />
+          </MenuButton>
+          <MenuList minWidth="240px">
+            <MenuOptionGroup
+              defaultValue="single"
+              title="Game Mode"
+              type="radio"
+            >
+              <MenuItemOption value="single" onClick={() => setMode("single")}>
+                Single Game
+              </MenuItemOption>
+              <MenuItemOption value="b-3" onClick={() => setMode("b-3")}>
+                Best of 3
+              </MenuItemOption>
+              <MenuItemOption value="b-5" onClick={() => setMode("b-5")}>
+                Best of 5
+              </MenuItemOption>
+              <MenuItemOption value="b-10" onClick={() => setMode("b-10")}>
+                Best of 10
+              </MenuItemOption>
+            </MenuOptionGroup>
+          </MenuList>
+        </Menu>
+        <Button
+          size="lg"
+          mt={5}
+          onClick={() => {
+            router.push({
+              pathname: "/game",
+              query: { mode: mode },
+            });
+          }}
+        >
+          Play Game
+        </Button>
+      </Flex>
+    </Box>
   );
 };
 
